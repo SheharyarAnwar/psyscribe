@@ -3,9 +3,9 @@ import User from "@/models/user";
 import NextAuth from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { SessionStrategy } from "next-auth";
+import { NextAuthOptions, SessionStrategy } from "next-auth";
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -58,7 +58,7 @@ export const authOptions = {
       return session;
     },
   },
-};
+} as const;
 
 const handler = NextAuth(authOptions);
 
