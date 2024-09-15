@@ -1,15 +1,64 @@
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { signIn } from "next-auth/react";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { SignupForm } from "./signup";
+import { useRouter } from "next/navigation";
 
 export const description =
   "A login page with two columns. The first column has the login form with email and password. There's a Forgot your passwork link and a link to sign up if you do not have an account. The second column has a cover image.";
 
 export function Login() {
-  return (
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const email = formData.get("email");
+    const password = formData.get("password");
+
+    try {
+      setLoading(true);
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        toast({
+          title: "Error",
+          description: "Invalid Credentials",
+        });
+      } else {
+        if (res?.url) {
+          toast({
+            title: "Success",
+            description: "Logged in successfully",
+          });
+          router.replace(res.url);
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  return isLogin ? (
     <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
       <div className="flex items-center justify-center py-12">
         <div className="mx-auto grid w-[350px] gap-6">
@@ -19,12 +68,13 @@ export function Login() {
               Enter your email below to login to your account
             </p>
           </div>
-          <div className="grid gap-4">
+          <form className="grid gap-4" onSubmit={handleSubmit}>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
+                name="email"
                 placeholder="m@example.com"
                 required
               />
@@ -39,32 +89,29 @@ export function Login() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" type="password" required />
+              <Input id="password" type="password" name="password" required />
             </div>
             <Button type="submit" className="w-full">
               Login
             </Button>
-            <Button variant="outline" className="w-full">
-              Login with Google
-            </Button>
-          </div>
+          </form>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
-            <Link href="#" className="underline">
+            <Button
+              variant="link"
+              onClick={() => setIsLogin(false)}
+              className="underline px-0"
+            >
               Sign up
-            </Link>
+            </Button>
           </div>
         </div>
       </div>
       <div className="hidden bg-muted lg:block">
-        <Image
-          src="/placeholder.svg"
-          alt="Image"
-          width="1920"
-          height="1080"
-          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-        />
+        <div className="bg-black h-full w-full"></div>
       </div>
     </div>
+  ) : (
+    <SignupForm setIsLogin={setIsLogin} />
   );
 }

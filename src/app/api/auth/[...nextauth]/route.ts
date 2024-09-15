@@ -1,73 +1,49 @@
-import type { NextAuthOptions } from "next-auth";
-import NextAuth from "next-auth";
+import { connectMongoDB } from "@/lib/mongodb";
+import User from "@/models/user";
+import NextAuth from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { SessionStrategy } from "next-auth";
 
-export const authOptions: NextAuthOptions = {
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/login",
-  },
+export const authOptions = {
   providers: [
     CredentialsProvider({
-      credentials: {
-        email: {},
-        password: {},
-      },
-      async authorize(credentials) {
-        try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}auth/login`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                email: credentials?.email,
-                password: credentials?.password,
-              }),
-            }
-          );
+      name: "credentials",
+      credentials: {},
 
-          const result = await response.json();
-          return result?.data;
+      async authorize(credentials: any) {
+        const { email, password } = credentials;
+
+        try {
+          await connectMongoDB();
+          const user = await User.findOne({ email });
+
+          if (!user) {
+            return null;
+          }
+
+          const passwordsMatch = await bcrypt.compare(password, user.password);
+
+          if (!passwordsMatch) {
+            return null;
+          }
+
+          return user;
         } catch (error) {
-          return null;
+          console.log("Error: ", error);
         }
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      const tokenExpiry = token?.exp as number;
-
-      if (tokenExpiry < Date.now()) {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}auth/refresh-token`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              refreshToken: token?.refreshToken,
-            }),
-          }
-        );
-
-        const result = await response.json();
-        token = { ...token, ...result?.data };
-      }
-      return { ...user, ...token };
-    },
-    async session({ token, session }) {
-      session.user = token;
-      return session;
-    },
+  session: {
+    strategy: "jwt" as SessionStrategy,
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  pages: {
+    signIn: "/",
   },
 };
+
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
