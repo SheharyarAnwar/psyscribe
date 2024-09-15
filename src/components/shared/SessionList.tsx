@@ -14,7 +14,6 @@ const SessionList: React.FC = () => {
       ) : (
         <div className="flex flex-col items-center justify-center p-4 text-gray-500">
           <svg
-            xmlns="http://www.w3.org/2000/svg"
             className="h-12 w-12 mb-2"
             fill="none"
             viewBox="0 0 24 24"
