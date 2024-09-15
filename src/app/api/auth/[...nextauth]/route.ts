@@ -27,7 +27,6 @@ export const authOptions = {
           if (!passwordsMatch) {
             return null;
           }
-
           return user;
         } catch (error) {
           console.log("Error: ", error);
@@ -41,6 +40,23 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/",
+  },
+  callbacks: {
+    async jwt({ token, user }: any) {
+      if (user) {
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
+        token._id = user._id;
+      }
+      return token;
+    },
+    async session({ session, token }: any) {
+      // Send properties to the client, like an access_token and user id from a provider.
+      session.user.firstName = token.firstName;
+      session.user.lastName = token.lastName;
+      session.user.id = token._id;
+      return session;
+    },
   },
 };
 

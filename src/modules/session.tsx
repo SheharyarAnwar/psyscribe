@@ -25,35 +25,37 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { User } from "next-auth";
+import ClientListDropdown, {
+  ClientProvider,
+} from "@/components/shared/ClientListDropdown";
+import SessionList from "@/components/shared/SessionList";
+import { ISession } from "@/app/types";
 
-type CardProps = React.ComponentProps<typeof Card>;
 type SessionType = "recording" | "transcription";
-interface Session {
-  patientName: string;
-  patientId: string;
-  sessionDate: string;
-  sessionTime: string;
-  sessionType: SessionType;
+
+interface SessionProps {
+  user: User;
 }
 
 const sessions = [
   {
-    patientName: "John Doe",
-    patientId: "1234567890",
+    clientName: "John Doe",
+    clientId: "1234567890",
     sessionDate: "2024-01-01",
     sessionTime: "10:00",
     sessionType: "recording" as SessionType,
   },
   {
-    patientName: "Jane Doe",
-    patientId: "1234567891",
+    clientName: "Jane Doe",
+    clientId: "1234567891",
     sessionDate: "2024-01-01",
     sessionTime: "10:00",
     sessionType: "transcription" as SessionType,
   },
   {
-    patientName: "Jan Doe",
-    patientId: "1234567892",
+    clientName: "Jan Doe",
+    clientId: "1234567892",
     sessionDate: "2024-01-01",
     sessionTime: "10:00",
     sessionType: "transcription" as SessionType,
@@ -75,21 +77,51 @@ const actionCards = [
   },
 ];
 
-const Session = ({ className, ...props }: CardProps) => {
+const getClients = async (userId: string) => {
+  try {
+    const url =
+      process.env.NEXT_PUBLIC_API_URL +
+      `/api/getClients?userId=${encodeURIComponent(userId)}`;
+    console.log("Fetching from URL:", url);
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch clients:", error);
+    return []; // Return an empty array or appropriate default value
+  }
+};
+
+const Session = async ({ user }: SessionProps) => {
+  const clients = await getClients(user?.id);
+  console.log({ clients });
   return (
     <>
       <div className="flex gap-4">
-        <Card className={cn("flex-1", className)} {...props}>
-          <CardHeader>
-            <CardTitle className="text-xl text-gray-900">Sessions</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            {sessions?.map((session) => (
-              <SessionCard key={session.patientId} session={session} />
-            ))}
-          </CardContent>
-          <CardFooter></CardFooter>
-        </Card>
+        <div className="flex flex-col gap-4 flex-1">
+          <ClientProvider>
+            <ClientListDropdown clients={clients} />
+            <Card className={cn("flex-1")}>
+              <CardHeader>
+                <CardTitle className="text-xl text-gray-900">
+                  Sessions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                <SessionList />
+              </CardContent>
+              <CardFooter></CardFooter>
+            </Card>
+          </ClientProvider>
+        </div>
         <div className={cn("flex flex-col  gap-4 w-96")}>
           {actionCards.map((card) => (
             <Link href={card.link} key={card.title}>
@@ -121,12 +153,12 @@ const Session = ({ className, ...props }: CardProps) => {
   );
 };
 
-const SessionCard = ({ session }: { session: Session }) => {
+export const SessionCard = ({ session }: { session: ISession }) => {
   return (
     <Card className="group rounded-lg cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all duration-150 hover:shadow-none hover:bg-gray-50 hover:ring-offset-2 border p-4">
-      <div key={session.patientId} className=" flex items-center space-x-4 ">
+      <div key={session.clientId} className=" flex items-center space-x-4 ">
         <div className="flex-1 space-y-2">
-          <CardTitle>{session.patientName}</CardTitle>
+          <CardTitle>{session.clientId}</CardTitle>
           <CardDescription className="font-medium text-xs flex gap-6">
             <span>{dayjs(session.sessionDate).format("MMMM D, YYYY")}</span>
             <span className="flex gap-2">

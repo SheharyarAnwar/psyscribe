@@ -45,7 +45,7 @@ export function Login() {
             title: "Success",
             description: "Logged in successfully",
           });
-          router.replace(res.url);
+          window.location.href = res.url;
         }
       }
     } catch (error) {
@@ -91,7 +91,7 @@ export function Login() {
               </div>
               <Input id="password" type="password" name="password" required />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={loading}>
               Login
             </Button>
           </form>
