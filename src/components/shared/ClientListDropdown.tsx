@@ -7,18 +7,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createContext, useContext, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useSession } from "next-auth/react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 interface ClientListDropdownProps {
-    clients: IClient[];
+  clients: IClient[];
   onSelect?: (clientId: string) => void;
 }
 
 // ... existing Client interface ...
 
 interface ClientContextType {
-  selectedClient: IClient | null;
-            setSelectedClient: (client: IClient | null) => void;
+  selectedClient: string | null;
+  setSelectedClient: (clientId: string | null) => void;
   clientSessions: ISession[];
   setClientSessions: (sessions: ISession[]) => void;
 }
@@ -36,7 +38,7 @@ export const useClientContext = () => {
 export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [selectedClient, setSelectedClient] = useState<IClient | null>(null);
+  const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [clientSessions, setClientSessions] = useState<ISession[]>([]);
 
   return (
@@ -54,8 +56,34 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({
 };
 
 const ClientListDropdown: React.FC<ClientListDropdownProps> = ({ clients }) => {
+  const { setSelectedClient, selectedClient, setClientSessions } =
+    useClientContext();
+  const { data } = useSession();
+  //@ts-ignore
+  const userId = data?.user?.id;
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (selectedClient) {
+      fetch(`/api/sessions?clientId=${selectedClient}&userId=${userId}`)
+        .then(async (res) => {
+          const data = await res.json();
+          setClientSessions(data);
+          console.log({ data });
+        })
+        .catch((err) => {
+          console.log(err);
+          toast({
+            title: "Error",
+            description: "Failed to fetch client sessions",
+            variant: "destructive",
+          });
+        });
+    }
+  }, [selectedClient]);
+
   const handleClientSelect = (clientId: string) => {
-    console.log({ clientId });
+    setSelectedClient(clientId);
   };
   return (
     <Select onValueChange={handleClientSelect}>

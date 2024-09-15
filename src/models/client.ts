@@ -15,12 +15,6 @@ const clientSchema = new Schema(
       ref: "User",
       required: true,
     },
-    sessions: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Session",
-      },
-    ],
   },
   { timestamps: true }
 );

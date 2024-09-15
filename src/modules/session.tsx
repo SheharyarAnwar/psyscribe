@@ -81,7 +81,7 @@ const getClients = async (userId: string) => {
   try {
     const url =
       process.env.NEXT_PUBLIC_API_URL +
-      `/api/getClients?userId=${encodeURIComponent(userId)}`;
+      `/api/clients?userId=${encodeURIComponent(userId)}`;
     console.log("Fetching from URL:", url);
     const res = await fetch(url, {
       method: "GET",
@@ -102,7 +102,6 @@ const getClients = async (userId: string) => {
 
 const Session = async ({ user }: SessionProps) => {
   const clients = await getClients(user?.id);
-  console.log({ clients });
   return (
     <>
       <div className="flex gap-4">

@@ -17,3 +17,12 @@ export interface IClient {
   createdBy: string;
   sessions: ISession[];
 }
+
+
+export interface ISessionNotes{
+
+  subjective:string;
+  objective:string;
+  assessment:string;
+  plan:string;
+}

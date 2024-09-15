@@ -2,9 +2,13 @@ import mongoose, { Schema, models } from "mongoose";
 
 const sessionSchema = new Schema(
   {
-    clientId: {
-      type: Schema.Types.ObjectId,
-      ref: "Client",
+    client: {
+      type: new Schema({
+        _id: { type: Schema.Types.ObjectId, ref: "Client", required: true },
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true },
+        createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+      }),
       required: true,
     },
     sessionDate: {
@@ -13,11 +17,15 @@ const sessionSchema = new Schema(
     },
     sessionDuration: {
       type: String,
-      required: true,
+      required: false,
     },
     sessionType: {
       type: String,
       enum: ["recording", "transcription"],
+      required: true,
+    },
+    notes: {
+      type: Object,
       required: true,
     },
   },

@@ -1,4 +1,3 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import { connectMongoDB } from "@/lib/mongodb";
 import Client from "@/models/client";
 import { NextResponse } from "next/server";
