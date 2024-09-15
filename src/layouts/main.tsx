@@ -1,11 +1,4 @@
-import {
-  Bird,
-  Rabbit,
-  Settings,
-  SquareLibrary,
-  Triangle,
-  Turtle,
-} from "lucide-react";
+import { SquareLibrary, Triangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -34,7 +27,7 @@ const routes = [
 interface MainLayout extends React.PropsWithChildren {}
 export async function MainLayout({ children }: MainLayout) {
   const session = await getServerSession(authOptions);
-  const user = session?.user;
+  const user = session?.user as any;
   const username = `${user?.firstName} ${user?.lastName}`;
   let renderable = (
     <div className="grid h-screen w-full pl-[200px]">
