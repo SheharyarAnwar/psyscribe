@@ -149,35 +149,33 @@ const TranscriptUpload = ({ clientId }: { clientId: string | null }) => {
         const response = await fetch(CHAT_MODEL_SERVICE, {
           method: "POST",
           body: data,
+          referrerPolicy: "unsafe-url",
         });
 
         if (response.ok) {
           const data = await response.json();
-          console.log({ data });
 
-          // const session = {
-          //   clientId: clientId,
-          //   sessionDate: new Date(),
-          //   sessionType: "transcription",
-          //   notes: res,
-          // };
+          const session = {
+            clientId: clientId,
+            sessionDate: new Date(),
+            sessionType: "transcription",
+            notes: data,
+          };
 
-          // if (res) {
-          //   const response = await fetch("/api/sessions/create", {
-          //     method: "POST",
-          //     body: JSON.stringify(session),
-          //   });
-          //   if (response.ok) {
-          //     const data = await response.json();
-          //     const sessionId = data?.session._id;
-          //     router.push(`/sessions/${sessionId}`);
-          //     toast({
-          //       title: "Session created",
-          //       description: "Session created successfully",
-          //       variant: "default",
-          //     });
-          //   }
-          // }
+          const ex = await fetch("/api/sessions/create", {
+            method: "POST",
+            body: JSON.stringify(session),
+          });
+          if (ex.ok) {
+            const d = await ex.json();
+            const sessionId = d?.session._id;
+            router.push(`/session/${sessionId}`);
+            toast({
+              title: "Session created",
+              description: "Session created successfully",
+              variant: "default",
+            });
+          }
         }
       }
     } catch (error) {
