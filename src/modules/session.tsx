@@ -64,16 +64,17 @@ const sessions = [
 
 const actionCards = [
   {
-    title: "Record New Session",
-    description: "Record a new session with a patient.",
-    icon: <Mic size={20} className="text-white" />,
-    link: "/session/create?type=recording",
-  },
-  {
     title: "Upload Transcript",
     description: "Upload a transcript file of completed sessions.",
     icon: <NotepadText size={20} className="text-white " />,
     link: "/session/create?type=transcription",
+  },
+  {
+    title: "Record New Session (Coming Soon)",
+    description: "Record a new session with a patient.",
+    icon: <Mic size={20} className="text-white" />,
+    link: "/session/create?type=recording",
+    disabled: true,
   },
 ];
 
@@ -123,14 +124,30 @@ const Session = async ({ user }: SessionProps) => {
         </div>
         <div className={cn("flex flex-col  gap-4 w-96")}>
           {actionCards.map((card) => (
-            <Link href={card.link} key={card.title}>
+            <Link href={card.disabled ? "#" : card.link} key={card.title}>
               <Card
                 key={card.title}
-                className="border-none hover:ring-2 transition-all cursor-pointer duration-150 rounded-2xl p-4 ring-blue-500 ring-offset-2 shadow-none bg-blue-50"
+                className={cn(
+                  {
+                    "bg-blue-50": !card?.disabled,
+                    "bg-gray-300 pointer-events-none cursor-not-allowed":
+                      card?.disabled,
+                  },
+                  "border-none hover:ring-2 transition-all cursor-pointer duration-150 rounded-2xl p-4 ring-blue-500 ring-offset-2 shadow-none"
+                )}
               >
                 <CardHeader className="p-0">
                   <div className="flex gap-4 justify-start items-start">
-                    <div className="bg-blue-600 p-4 rounded-full">
+                    <div
+                      className={cn(
+                        {
+                          "bg-blue-600": !card?.disabled,
+                          "bg-gray-400 pointer-events-none cursor-not-allowed":
+                            card?.disabled,
+                        },
+                        " p-4 rounded-full"
+                      )}
+                    >
                       {card.icon}
                     </div>
                     <div className="flex flex-col gap-2 my-auto">
@@ -154,42 +171,48 @@ const Session = async ({ user }: SessionProps) => {
 
 export const SessionCard = ({ session }: { session: ISession }) => {
   return (
-    <Card className="group rounded-lg cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all duration-150 hover:shadow-none hover:bg-gray-50 hover:ring-offset-2 border p-4">
-      <div key={session.clientId} className=" flex items-center space-x-4 ">
-        <div className="flex-1 space-y-2">
-          <CardTitle>{session.clientId}</CardTitle>
-          <CardDescription className="font-medium text-xs flex gap-6">
-            <span>{dayjs(session.sessionDate).format("MMMM D, YYYY")}</span>
-            <span className="flex gap-2">
-              <Clock10 size={16} className="text-black" />
-              {session.sessionTime}
-            </span>
-            {session.sessionType === "recording" ? (
-              <span className="flex gap-2">
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Mic size={16} className="text-blue-600" />
-                  </TooltipTrigger>
-                  <TooltipContent>Recording</TooltipContent>
-                </Tooltip>
-              </span>
-            ) : (
-              <span className="flex gap-2">
-                <Tooltip>
-                  <TooltipTrigger>
-                    <NotepadText size={16} className="text-blue-600" />
-                  </TooltipTrigger>
-                  <TooltipContent>Transcription File</TooltipContent>
-                </Tooltip>
-              </span>
-            )}
-          </CardDescription>
+    <Link href={`/session/${session._id}`}>
+      <Card className="group rounded-lg cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all duration-150 hover:shadow-none hover:bg-gray-50 hover:ring-offset-2 border p-4">
+        <div key={session._id} className=" flex items-center space-x-4 ">
+          <div className="flex-1 space-y-2">
+            <CardTitle>
+              {session.client.firstName} {session.client.lastName}
+            </CardTitle>
+            <CardDescription className="font-medium text-xs flex gap-6">
+              <span>{dayjs(session.sessionDate).format("MMMM D, YYYY")}</span>
+              {session.sessionTime && (
+                <span className="flex gap-2">
+                  <Clock10 size={16} className="text-black" />
+                  {session.sessionTime}
+                </span>
+              )}
+              {session.sessionType === "recording" ? (
+                <span className="flex gap-2">
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Mic size={16} className="text-blue-600" />
+                    </TooltipTrigger>
+                    <TooltipContent>Recording</TooltipContent>
+                  </Tooltip>
+                </span>
+              ) : (
+                <span className="flex gap-2">
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <NotepadText size={16} className="text-blue-600" />
+                    </TooltipTrigger>
+                    <TooltipContent>Transcription File</TooltipContent>
+                  </Tooltip>
+                </span>
+              )}
+            </CardDescription>
+          </div>
+          <span className="ml-auto my-auto opacity-0 group-hover:opacity-100 transition-all duration-150">
+            <ChevronRight size={24} className="text-gray-600" />
+          </span>
         </div>
-        <span className="ml-auto my-auto opacity-0 group-hover:opacity-100 transition-all duration-150">
-          <ChevronRight size={24} className="text-gray-600" />
-        </span>
-      </div>
-    </Card>
+      </Card>
+    </Link>
   );
 };
 

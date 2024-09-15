@@ -58,14 +58,12 @@ export const ClientProvider: React.FC<{ children: React.ReactNode }> = ({
 const ClientListDropdown: React.FC<ClientListDropdownProps> = ({ clients }) => {
   const { setSelectedClient, selectedClient, setClientSessions } =
     useClientContext();
-  const { data } = useSession();
   //@ts-ignore
-  const userId = data?.user?.id;
   const { toast } = useToast();
 
   useEffect(() => {
     if (selectedClient) {
-      fetch(`/api/sessions?clientId=${selectedClient}&userId=${userId}`)
+      fetch(`/api/sessions?clientId=${selectedClient}`)
         .then(async (res) => {
           const data = await res.json();
           setClientSessions(data);

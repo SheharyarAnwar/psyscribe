@@ -1,6 +1,6 @@
 export interface ISession {
   _id: string;
-  clientId: string;
+  client: IClient;
   sessionDate: string;
   sessionTime: string;
   sessionType: string;
@@ -18,11 +18,9 @@ export interface IClient {
   sessions: ISession[];
 }
 
-
-export interface ISessionNotes{
-
-  subjective:string;
-  objective:string;
-  assessment:string;
-  plan:string;
+export interface ISessionNotes {
+  subjective: string;
+  objective: string;
+  assessment: string;
+  plan: string;
 }

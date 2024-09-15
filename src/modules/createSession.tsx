@@ -100,6 +100,16 @@ const CreateSession = ({}: Props) => {
                     required
                   />
                 </div>
+
+                <div className="grid gap-2">
+                  <Button
+                    variant={"link"}
+                    className="ml-auto inline-block text-sm underline"
+                  >
+                    Create a session for existing client? (Coming Soon)
+                  </Button>
+                </div>
+
                 <Button type="submit" className="w-full" disabled={loading}>
                   Create Client
                 </Button>
@@ -122,6 +132,8 @@ const AudioRecorder = () => {
 };
 
 const TranscriptUpload = ({ clientId }: { clientId: string | null }) => {
+  const CHAT_MODEL_SERVICE =
+    "https://psy-flask-production.up.railway.app/generate-soap";
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -134,36 +146,38 @@ const TranscriptUpload = ({ clientId }: { clientId: string | null }) => {
         const data = new FormData();
         data.append("file", file);
 
-        // TODO: upload file to server here to get the generated response
-        const res = {
-          subjective: "Hello",
-          objective: "World",
-          assessment: "Hello",
-          plan: "Gamma",
-        };
+        const response = await fetch(CHAT_MODEL_SERVICE, {
+          method: "POST",
+          body: data,
+        });
 
-        const session = {
-          clientId: clientId,
-          sessionDate: new Date(),
-          sessionType: "transcription",
-          notes: res,
-        };
+        if (response.ok) {
+          const data = await response.json();
+          console.log({ data });
 
-        if (res) {
-          const response = await fetch("/api/sessions/create", {
-            method: "POST",
-            body: JSON.stringify(session),
-          });
-          if (response.ok) {
-            const data = await response.json();
-            const sessionId = data?.session._id;
-            router.push(`/session/${sessionId}`);
-            toast({
-              title: "Session created",
-              description: "Session created successfully",
-              variant: "default",
-            });
-          }
+          // const session = {
+          //   clientId: clientId,
+          //   sessionDate: new Date(),
+          //   sessionType: "transcription",
+          //   notes: res,
+          // };
+
+          // if (res) {
+          //   const response = await fetch("/api/sessions/create", {
+          //     method: "POST",
+          //     body: JSON.stringify(session),
+          //   });
+          //   if (response.ok) {
+          //     const data = await response.json();
+          //     const sessionId = data?.session._id;
+          //     router.push(`/sessions/${sessionId}`);
+          //     toast({
+          //       title: "Session created",
+          //       description: "Session created successfully",
+          //       variant: "default",
+          //     });
+          //   }
+          // }
         }
       }
     } catch (error) {
